@@ -116,14 +116,14 @@
         <div style="font-size:0.7rem; color:var(--text-muted); text-align:right;">※深圳基準。広州・香港もほぼ同気候です。</div>
     </div>
     <div class="card">
-        <div class="card-title">📍 Baidu Map (百度地図) 検索</div>
-        <div style="font-size:0.8rem; color:var(--text-muted); margin-bottom:12px;">中国本土ではGoogleマップがズレるため、Baidu地図を使用します。</div>
-        <button class="btn-primary" onclick="openBaiduMapAtCurrent()" style="background:var(--miso); margin-bottom:16px;">🌍 現在地周辺のBaidu地図を開く</button>
+        <div class="card-title">📍 Apple Map (Apple地図) 検索</div>
+        <div style="font-size:0.8rem; color:var(--text-muted); margin-bottom:12px;">アップルのマップを使用します。</div>
+        <button class="btn-primary" onclick="openAppleMapAtCurrent()" style="background:var(--miso); margin-bottom:16px;">🌍 現在地周辺のApple地図を開く</button>
         <div id="map-status" style="font-size: 0.75rem; color: var(--text-muted); text-align: center; margin-bottom:16px;"></div>
         <div style="font-size:0.85rem; font-weight:600; margin-bottom:8px;">🚕 目的地へのルート検索（漢字推奨）</div>
         <div style="display:flex; gap:8px;">
             <input type="text" id="route-dest" class="search-input" placeholder="例：深圳北站, 广州塔, 海底捞">
-            <button class="search-go" onclick="routeBaiduDirect(document.getElementById('route-dest').value)">検索</button>
+            <button class="search-go" onclick="routeAppleDirect(document.getElementById('route-dest').value)">検索</button>
         </div>
     </div>
 </div>
@@ -515,7 +515,7 @@ const data = {
     "hk": {
         "spots": [
             {"t": "ビクトリアピーク(太平山)", "d": "「100万ドルの夜景」と称される世界三大夜景。急勾配のピークトラムに乗って山頂へ向かいます。", "k": "香港 太平山顶"},
-            {"t": "シンフォニー・オブ・ライツ", "d": "毎晩20時からビクトリアハーバーで開催される、ギネス認定の世界最大の光と音のショー。", "k": "香港 维多利亚港 幻彩咏香江"},
+            {"t": "シンフォニー・オブ・ライツ", "d": "毎晩20時からビクトリアハーバーで開催される、ギネス認定の世界最大の光と音のショー。", "k": "香港 维多利亚港"},
             {"t": "尖沙咀プロムナード", "d": "海沿いの遊歩道。ブルース・リーの銅像がある「アベニュー・オブ・スターズ」で記念撮影。", "k": "香港 尖沙咀海滨长廊"},
             {"t": "蘭桂坊 (ランカイフォン)", "d": "中環（セントラル）にあるバーやクラブが密集するナイトライフの中心地。欧米人も多く国際的。", "k": "香港 兰桂坊"},
             {"t": "旺角 (モンコック) / 女人街", "d": "ネオンサインが輝く香港で最も人口密度の高いエリア。ローカルな屋台やスニーカー街が連なる。", "k": "香港 旺角 女人街"},
@@ -548,7 +548,7 @@ const data = {
             {"t": "魚蛋 (フィッシュボール)", "d": "カレー味のスープで煮込んだ弾力のある魚のすり身団子。街角のスタンドで串に刺して立ち食いする。", "k": "香港 咖喱鱼蛋"},
             {"t": "鶏蛋仔 (エッグワッフル)", "d": "ポコポコとした丸い形が繋がった、外はサクッと中はモチモチの香港式ベビーカステラ。", "k": "香港 鸡蛋仔"},
             {"t": "飲茶 (陸羽茶室)", "d": "ステンドグラスや木彫りの装飾が美しいレトロな老舗茶室で、クラシックな点心を味わう。", "k": "香港 陆羽茶室"},
-            {"t": "海鮮料理 (西貢)", "d": "水槽から生きたシャコやハタを選び、好みの調理法（ガーリック揚げや清蒸）で作ってもらう贅沢な海鮮街。", "k": "香港 西贡 海鲜"},
+            {"t": "海鮮料理 (西貢)", "d": "水槽から生きたシャコやハタを選び、好みの調理法（ガーリック揚げや清蒸）で作ってもらう贅沢な海鮮街。", "k": "香港 西贡"},
             {"t": "橋底辣蟹 (スパイシークラブ)", "d": "巨大なマッドクラブを、大量のフライドガーリックと唐辛子の山に埋もれさせて炒めた強烈な一品。", "k": "香港 桥底辣蟹"},
             {"t": "蛇スープ (蛇羹)", "d": "冬の風物詩。細切りにした蛇肉が入ったとろみのあるスープで、体をポカポカに温める滋養強壮食。", "k": "香港 蛇羹"},
             {"t": "フレンチトースト (西多士)", "d": "ピーナッツバターを挟んだ食パンを油で揚げ、シロップをたっぷりかけて食べる超高カロリースイーツ。", "k": "香港 西多士"},
@@ -692,26 +692,38 @@ function switchTab(id) {
 }
 
 // ======================================
-// BAIDU MAP (Bugs Fixed)
+// APPLE MAP
 // ======================================
-function openBaiduMapAtCurrent() {
+
+// 1. 現在地のApple Mapを開く
+function openAppleMapAtCurrent() {
     const st = document.getElementById('map-status');
     if (!navigator.geolocation) { st.textContent = '❌ GPS非対応です。'; return; }
     st.textContent = '⏳ 位置情報を取得中...';
+    
+    const newWin = window.open('about:blank', '_blank');
+    if(!newWin) {
+        st.textContent = '❌ ポップアップがブロックされました。ブラウザの設定をご確認ください。';
+        return;
+    }
+
     navigator.geolocation.getCurrentPosition(
         pos => {
-            window.open(`https://map.baidu.com/@${pos.coords.longitude},${pos.coords.latitude},15z`, '_blank', 'noopener,noreferrer');
-            st.textContent = '✅ Baidu Mapを開きました。';
+            newWin.location.href = `https://maps.apple.com/?ll=${pos.coords.latitude},${pos.coords.longitude}&z=15`;
+            st.textContent = '✅ Apple Mapを開きました。';
         },
-        err => { st.textContent = '❌ 位置情報が取得できません。検索窓をご利用ください。'; },
+        err => { 
+            newWin.close();
+            st.textContent = '❌ 位置情報が取得できません。検索窓をご利用ください。'; 
+        },
         { enableHighAccuracy: true, timeout: 5000 }
     );
 }
 
-// 指定したキーワードで経路案内 (Baidu Map)
-function routeBaiduDirect(dest) { 
+// 2. 検索窓からの経路検索
+function routeAppleDirect(dest) { 
     if (!dest) return;
-    window.open('https://map.baidu.com/dir/%E5%BD%93%E5%89%8D%E4%BD%8D%E7%BD%AE/' + encodeURIComponent(dest), '_blank', 'noopener,noreferrer'); 
+    window.open('https://maps.apple.com/?daddr=' + encodeURIComponent(dest), '_blank'); 
 }
 
 // ======================================
@@ -719,7 +731,6 @@ function routeBaiduDirect(dest) {
 // ======================================
 async function loadWeather() {
     try {
-        // Shenzhen Coordinates
         const r = await fetch(`https://api.open-meteo.com/v1/forecast?latitude=22.5431&longitude=114.0579&current=temperature_2m,weathercode,relative_humidity_2m&daily=temperature_2m_max,temperature_2m_min&timezone=Asia%2FShanghai&forecast_days=1`);
         const d = await r.json(), cur = d.current;
         const wmap = { 0:'☀️',1:'🌤️',2:'⛅',3:'☁️',51:'🌦️',53:'🌦️',61:'🌧️',63:'🌧️',65:'🌧️',80:'🌦️',95:'⛈️',96:'⛈️',99:'⛈️' };
@@ -736,7 +747,7 @@ async function loadWeather() {
 loadWeather();
 
 // ======================================
-// RENDER ACCORDIONS (Dynamic URL Generation)
+// RENDER ACCORDIONS (Popup Block bypass via <a> tags)
 // ======================================
 const catNames = {
     "spots": "🐼 名所 (20選)", 
@@ -758,19 +769,15 @@ const cityNames = { 'sz': '深圳', 'gz': '广州', 'hk': '香港' };
         const itemsHtml = data[city][cat].map((item, i) => {
             let buttons = '';
             
-            // Map Links (Baidu Maps for All locations)
             if (['spots', 'food', 'business', 'others'].includes(cat)) {
-                // Use explicit keyword if provided, otherwise construct it
                 const mapKw = item.k ? item.k : `${cityNames[city]} ${item.t}`;
-                buttons += `<button class="btn-sm" onclick="window.open('https://map.baidu.com/search/${encodeURIComponent(mapKw)}', '_blank', 'noopener,noreferrer')">📍 百度地図</button>`;
-                buttons += `<button class="btn-sm" onclick="routeBaiduDirect('${mapKw}')">🚗 経路</button>`;
+                buttons += `<a href="https://maps.apple.com/?q=${encodeURIComponent(mapKw)}" target="_blank" class="btn-sm">📍 Apple地図</a>`;
+                buttons += `<a href="https://maps.apple.com/?daddr=${encodeURIComponent(mapKw)}" target="_blank" class="btn-sm">🚗 経路</a>`;
             }
 
-            // Reference Links (To prevent 404 broken links forever, we dynamically route to Search Engines)
-            // Hong Kong -> Google | Shenzhen/Guangzhou -> Baidu
             const searchBase = (city === 'hk') ? 'https://www.google.com/search?q=' : 'https://www.baidu.com/s?wd=';
             const refUrl = searchBase + encodeURIComponent(cityNames[city] + " " + item.t);
-            buttons += `<a href="${refUrl}" target="_blank" rel="noopener noreferrer" class="btn-sm btn-link">🔗 参考URL</a>`;
+            buttons += `<a href="${refUrl}" target="_blank" class="btn-sm btn-link">🔗 参考URL</a>`;
 
             return `
             <div class="tip-item">
@@ -809,7 +816,7 @@ function calcAll() {
 }
 
 // ======================================
-// AI DIARY (Gas Integration)
+// AI DIARY
 // ======================================
 async function submitToAI() {
     const good = document.getElementById('ai-good-input').value.trim();
@@ -821,7 +828,6 @@ async function submitToAI() {
     if (!good && !bad) { alert('今日の成果や課題を入力してください！'); return; }
     btn.textContent = '⏳ AIが考えています...'; btn.disabled = true; resArea.style.display = 'none';
 
-    // Provided GAS endpoint
     const gasUrl = 'https://script.google.com/macros/s/AKfycbxT2T8HcLaGMSnaKzwR0AbtXu1QD6tZ5e638EHaQwI5zW4nrgTsYTW_QaJFhyoyvg/exec';
     const prompt = `あなたは多忙なビジネスパーソンをサポートする優秀な秘書AIです。現在、ユーザーは大湾区（深セン・広州・香港）へ出張中です。以下の今日の「よかったこと」と「悪かったこと」を分析し、明日への活力となるような労いと専門的なフィードバックを2〜3文程度で返してください。冒頭や締めに「辛苦了」等の労いの中国語を自然に交えてください。\n【よかったこと】\n${good}\n【悪かったこと】\n${bad}`;
 
